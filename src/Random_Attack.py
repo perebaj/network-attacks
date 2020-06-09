@@ -155,38 +155,41 @@ def attack_transitivity_igraph(graph, iteration_removals):
         components      = graph.components()
         graph           = components.giant() #Maior componente conexo da rede
         size_largest_cc = graph.vcount()
-        if size_largest_cc <= iteration_removals:
-            break
         largest_cc.append(size_largest_cc)
         cluster     = np.array(graph.transitivity_local_undirected(mode='zero'))
-        if cluster.sum() == 0:
+        if filtro(cluster, 0) < iteration_removals:
             break
         probs       = cluster/cluster.sum() #Probilidades proporcionais ao grau de cada vértice
+        # print(probs)
         nodes_index = np.random.choice(graph.vcount(), size=iteration_removals, replace=False, p=probs) #escolha de {iteration_removals} nós de acordo com as probabilidade para serem removidos
+        # print(nodes_index)
         graph.delete_vertices(nodes_index)
 
     return largest_cc
 
+def filtro(lista, filtro):
+    filtrados = [x for x in lista if x > filtro]
+    return len(filtrados)
 
 
-NODES_NUMBER = 100
+NODES_NUMBER = 10000
 ITERATION_REMOVALS = 10
 manipulate = ManipulateGraph()
-waxman = networkx.waxman_graph(10000, alpha=0.007, beta=1)
+# waxman = networkx.waxman_graph(10000, alpha=0.007, beta=1)
 # barabasi = networkx.barabasi_albert_graph(NODES_NUMBER, 3)
-igraphRandom = manipulate.convert_networkx_to_igraph(waxman)
-igraphDegree = igraphRandom.copy()
-# erdos = igraph.Graph.Erdos_Renyi(NODES_NUMBER, 6/NODES_NUMBER) 
-graumedio = manipulate.degree_average_nx(waxman)
-print(graumedio)
-largest_cc2, transitivity2 = attack_degree_igraph(igraphDegree, ITERATION_REMOVALS)
-largest_cc1, transitivity1 = random_attack_igraph(igraphRandom, ITERATION_REMOVALS)
-# largest_cc = attack_transitivity_igraph(erdos, ITERATION_REMOVALS)
+# igraph = manipulate.convert_networkx_to_igraph(waxman)
+# igraphDegree = igraphRandom.copy()
+erdos = igraph.Graph.Erdos_Renyi(NODES_NUMBER, 10/NODES_NUMBER) 
+# graumedio = manipulate.degree_average_nx(waxman)
+# print(graumedio)
+# largest_cc2, transitivity2 = attack_degree_igraph(igraphDegree, ITERATION_REMOVALS)
+# largest_cc1, transitivity1 = random_attack_igraph(igraphRandom, ITERATION_REMOVALS)
+largest_cc = attack_transitivity_igraph(erdos, ITERATION_REMOVALS)
 
+print(largest_cc)
 
-
-np.savetxt('largest_cc_waxman_degreeATT', largest_cc2)
-np.savetxt('transitivity_waxman_degreeATT', transitivity2)
-np.savetxt('largest_cc_waxman_randomATT', largest_cc1)
-np.savetxt('transitivity_waxman_randomATT', transitivity1)
+# np.savetxt('largest_cc_waxman_degreeATT', largest_cc2)
+# np.savetxt('transitivity_waxman_degreeATT', transitivity2)
+# np.savetxt('largest_cc_waxman_randomATT', largest_cc1)
+# np.savetxt('transitivity_waxman_randomATT', transitivity1)
 
