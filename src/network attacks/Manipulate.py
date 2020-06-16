@@ -59,4 +59,8 @@ class ManipulateGraph:
         d = np.array(d)
         return np.mean(d)
 
+    def degree_average_ig(self, graph_ig):
+        degrees = np.array(graph_ig.degree())
+        return np.mean(degrees)
 
+    

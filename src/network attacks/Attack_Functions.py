@@ -149,47 +149,69 @@ def nan_replace(lista):
     return lista
 
 def attack_transitivity_igraph(graph, iteration_removals):
-    graph       = graph.copy()
-    largest_cc  = []
+    graph        = graph.copy()
+    largest_cc   = []
+    transitivity = []
     while True:
         components      = graph.components()
         graph           = components.giant() #Maior componente conexo da rede
         size_largest_cc = graph.vcount()
         largest_cc.append(size_largest_cc)
         cluster     = np.array(graph.transitivity_local_undirected(mode='zero'))
+        transitivity.append(graph.transitivity_undirected()) #Transitivade da rede com maior componente conexo
         if filtro(cluster, 0) < iteration_removals:
-            break
+            cluster += 1e-10
         probs       = cluster/cluster.sum() #Probilidades proporcionais ao grau de cada vértice
         # print(probs)
         nodes_index = np.random.choice(graph.vcount(), size=iteration_removals, replace=False, p=probs) #escolha de {iteration_removals} nós de acordo com as probabilidade para serem removidos
         # print(nodes_index)
         graph.delete_vertices(nodes_index)
 
-    return largest_cc
+    return largest_cc, transitivity
+
+
+def attack_betweenness_igraph(graph, iteration_removals):
+    graph        = graph.copy()
+    largest_cc   = []
+    transitivity = []
+    while True:
+        components      = graph.components()
+        graph           = components.giant() #Maior componente conexo da rede
+        size_largest_cc = graph.vcount()
+        largest_cc.append(size_largest_cc)
+        transitivity.append(graph.transitivity_undirected()) #Transitivade da rede com maior componente conexo
+        betweenness = np.array(graph.betweenness())
+        if filtro(betweenness, 0) < iteration_removals:
+            break
+        probs       = betweenness/betweenness.sum() 
+        nodes_index = np.random.choice(graph.vcount(), size=iteration_removals, replace=False, p=probs) 
+        graph.delete_vertices(nodes_index)
+
+    return largest_cc, transitivity
 
 def filtro(lista, filtro):
     filtrados = [x for x in lista if x > filtro]
     return len(filtrados)
 
 
-NODES_NUMBER = 10000
-ITERATION_REMOVALS = 10
-manipulate = ManipulateGraph()
+# NODES_NUMBER = 1000
+# ITERATION_REMOVALS = 10
+# manipulate = ManipulateGraph()
 # waxman = networkx.waxman_graph(10000, alpha=0.007, beta=1)
 # barabasi = networkx.barabasi_albert_graph(NODES_NUMBER, 3)
-# igraph = manipulate.convert_networkx_to_igraph(waxman)
+# igraph = manipulate.convert_networkx_to_igraph(barabasi)
 # igraphDegree = igraphRandom.copy()
-erdos = igraph.Graph.Erdos_Renyi(NODES_NUMBER, 10/NODES_NUMBER) 
-# graumedio = manipulate.degree_average_nx(waxman)
+# erdos = igraph.Graph.Erdos_Renyi(NODES_NUMBER, 6/NODES_NUMBER) 
+# graumedio = manipulate.degree_average_nx(barabasi)
 # print(graumedio)
 # largest_cc2, transitivity2 = attack_degree_igraph(igraphDegree, ITERATION_REMOVALS)
 # largest_cc1, transitivity1 = random_attack_igraph(igraphRandom, ITERATION_REMOVALS)
-largest_cc = attack_transitivity_igraph(erdos, ITERATION_REMOVALS)
+# largest_cc, transitivity = attack_betweenness_igraph(erdos, ITERATION_REMOVALS)
 
-print(largest_cc)
+# print(largest_cc)
 
-# np.savetxt('largest_cc_waxman_degreeATT', largest_cc2)
-# np.savetxt('transitivity_waxman_degreeATT', transitivity2)
+# np.savetxt('teste', largest_cc)
+# np.savetxt('teste2', transitivity)
 # np.savetxt('largest_cc_waxman_randomATT', largest_cc1)
 # np.savetxt('transitivity_waxman_randomATT', transitivity1)
 

@@ -2,7 +2,7 @@ Ataque as redes salvas em um arquivo txt
 
 para ler:
 
-largest_cc = numpy.loadtxt('nomedoarquivo')
+largest_cc = numpy.loadtxt('nomedoarquivo ou caminho do arquivo')
 transitivity_ = numpy.loadtxt('nomedoarquivo')
 
 largest_cc(..): representa o maior componente conexo da rede após uma remoção de 10 nós por iteração. Seja essa 
@@ -12,4 +12,3 @@ transitivity_(..): representa uma métrica de centralidade, seu valor após a re
     ataques direcionado e aleatório.
 
 
-Ambas as redes possuem grau médio de aproximadamente 4
